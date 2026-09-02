@@ -1,0 +1,3 @@
+import { SlidersHorizontal } from 'lucide-react';
+import ProductCard from '../components/ProductCard';
+export default function Shop({products,addToCart}) { return <main className="shop"><div className="shop-title"><small>THE COLLECTION</small><h1>New arrivals</h1><p>Refined layers, sculpted tailoring and enduring accessories for the season ahead.</p></div><div className="shopbar"><span>{products.length} pieces</span><button><SlidersHorizontal/> Filter & sort</button></div><div className="product-grid shop-grid">{products.map(p=><ProductCard key={p.id} product={p} addToCart={addToCart}/>)}</div></main> }
