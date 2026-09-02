@@ -480,23 +480,50 @@ app.use((req, res) => res.status(404).json({ message: 'VELORA API route not foun
 
 async function boot() {
   const adminHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-  memory.users.push({ id: 'USR-ADMIN', name: 'VELORA Admin', email: ADMIN_EMAIL, passwordHash: adminHash, role: 'admin', country: 'Sri Lanka', phone: '', address: '', createdAt: new Date() });
+
+  memory.users.push({
+    id: 'USR-ADMIN',
+    name: 'VELORA Admin',
+    email: ADMIN_EMAIL,
+    passwordHash: adminHash,
+    role: 'admin',
+    country: 'Sri Lanka',
+    phone: '',
+    address: '',
+    createdAt: new Date()
+  });
 
   if (process.env.MONGO_URI) {
     try {
       await mongoose.connect(process.env.MONGO_URI);
       console.log('MongoDB connected');
-      if ((await Product.countDocuments()) === 0) await Product.insertMany(seedProducts);
-      const existingAdmin = await User.findOne({ email: ADMIN_EMAIL });
-      if (!existingAdmin) await User.create({ name: 'VELORA Admin', email: ADMIN_EMAIL, passwordHash: adminHash, role: 'admin' });
-    } catch (error) {
-      console.warn(`MongoDB unavailable; using in-memory demo store: ${error.message}`);
-    }
-  } else {
-    console.log('MONGO_URI not set; using in-memory demo store.');
-  }
 
-  app.listen(PORT, () => console.log(`VELORA API running on http://localhost:${PORT}`));
+      if ((await Product.countDocuments()) === 0) {
+        await Product.insertMany(seedProducts);
+      }
+
+      const existingAdmin = await User.findOne({ email: ADMIN_EMAIL });
+
+      if (!existingAdmin) {
+        await User.create({
+          name: 'VELORA Admin',
+          email: ADMIN_EMAIL,
+          passwordHash: adminHash,
+          role: 'admin'
+        });
+      }
+    } catch (error) {
+      console.warn(`MongoDB unavailable: ${error.message}`);
+    }
+  }
 }
 
-boot();
+await boot();
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () =>
+    console.log(`VELORA API running on http://localhost:${PORT}`)
+  );
+}
+
+export default app;
